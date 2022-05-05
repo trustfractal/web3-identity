@@ -12,7 +12,7 @@ The lookups below add approximately 26,000 gas to the transaction cost.
 
 ### Usage
 
-Import our `FractalRegistry.sol` contract to use its ABI, set its address, and add a modifier such as the following to enforce the user is present in the registry and in the right lists.
+Import our `FractalRegistry.sol` contract, set its address, and add a modifier such as the following to enforce the user is present in the registry and in the right lists.
 
 ```
 import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
