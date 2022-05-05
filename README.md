@@ -1,6 +1,6 @@
-# Identity-based smart contract authorization
+# Identity for web3: privacy-preserving transaction authorization
 
-**Power your smart contracts with identity verification — without needing to access or manage personal data.**
+**Power your smart contracts with verified identities — without accessing or managing personal data.**
 
 Authorize transactions based on verified user uniqueness, reputation, and KYC/AML status:
 * enable truly democratic governance with one-person-one vote;
@@ -15,6 +15,9 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 ## DID Registry Lookup
 
 **Authorize transactions by looking up their sender on Fractal's DID registry.**
+* no need to access or manage personal data
+* no need to change the user flow
+* no need for user interaction (e.g. airdrops)
 
 ![did-registry-lookup](https://user-images.githubusercontent.com/365821/166981861-3966c717-ffcc-4162-b6f0-5dd9e0ac4a76.png)
 
@@ -70,7 +73,6 @@ No further steps are required. Fractal keeps the DID Registry up to date. Build 
 mainContract.methods.main().send({ from: account });
 ```
 
-
 ### Gas cost
 
 The example above adds approximately 26k gas to the transaction cost. Gas usage increases with the number of lookups.
@@ -78,6 +80,8 @@ The example above adds approximately 26k gas to the transaction cost. Gas usage 
 ## Credential Verification
 
 **Authorize transactions by including a Fractal signature in their payload.**
+* no need to access or manage personal data
+* minimal changes to user flow
 
 ![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
 
