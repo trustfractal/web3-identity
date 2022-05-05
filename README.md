@@ -49,9 +49,17 @@ This method allows you to authorize transactions by including a signed credentia
 
 ![credential-verification](https://user-images.githubusercontent.com/365821/166913405-033ad50d-366c-4017-af9b-a8b84bf8821e.png)
 
-For example, for the credential `plus;not:ca,de,us` states this user cleared the KYC level `plus`, and is not a resident of Canada, Germany or the United States, Fractal would return the following signature: `0x9925305e1b30bb7f2ca11f21b0bc899893b1b34fea5f5f9b9d9cb9b99e3f3c8e094f8dafd53a7c41a549a15d8e0a2f665f3ed3dcf715302f7bbb89c0ee6307181b`
+For example, take the following credential: `1651759004;0x5b38da6a701c568545dcfcb03fcb875f56beddc4;plus;not:ca,de,us`.
 
-This verification adds approximately 8,000 gas to the transaction cost.
+It states that:
+* it's valid until timestamp `1651759004`
+* it's valid for sender `0x5b38da6a701c568545dcfcb03fcb875f56beddc4`
+* this user cleared the KYC level `plus`
+* this user is not a resident of Canada, Germany or the United States (country codes as per [ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+
+Our API would return the following signature for this credential: `0x8ca40cd6e957b91cce730aa9f29584d9dd0bc19c2934cb94f12ffee20b38940d511c78d50ea55b281943542ba29f567581e08528479e07c432415eda35cb67581c`
+
+This verification adds approximately 26,000 gas to the transaction cost.
 
 ### Usage
 
@@ -62,8 +70,9 @@ import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
 
 contract Main is CredentialVerifier {
     function main(
-        bytes calldata signature
-    ) external requiresCredential("plus;not:ca,de,us", signature) {
+        bytes calldata signature,
+        uint validUntil
+    ) external requiresCredential("plus;not:ca,de,us", signature, validUntil) {
         /* your logic goes here */
     }
 }
