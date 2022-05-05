@@ -64,7 +64,12 @@ contract Main {
 
 ### Usage
 
-You're all set: no further steps are required. Fractal keeps the DID Registry up to date.
+No further steps are required. Fractal keeps the DID Registry up to date. Build your transactions as you normally would.
+
+```javascript
+mainContract.methods.main().send({ from: account });
+```
+
 
 ### Gas cost
 
