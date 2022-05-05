@@ -10,7 +10,7 @@ contract CredentialVerifier {
         bytes calldata signature
     ) {
         require(SignatureChecker.isValidSignatureNow(
-            0xFBA3ee69ee4B25FfA8B1b8249Bd1745bcEAa11D7,
+            0x559FfB9C4AB5A552Ed2Ea814A84e74D4CFA21d34,
             ECDSA.toEthSignedMessageHash(abi.encodePacked(expectedCredential)),
             signature
         ));
