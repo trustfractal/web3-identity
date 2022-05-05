@@ -1,6 +1,6 @@
 # Identity-based smart contract authorization
 
-**Power your smart contracts with identity verification.**
+**Power your smart contracts with identity verification — without needing to access or manage personal data.**
 
 Authorize transactions based on verified user uniqueness, reputation, and KYC/AML status:
 * enable truly democratic governance with one-person-one vote;
@@ -14,9 +14,9 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 
 ## DID Registry Lookup
 
-**Authorize transactions by checking their origin address against Fractal's DID registry.**
+**Authorize transactions by looking up their sender on Fractal's DID registry.**
 
-![did-registry-lookup](https://user-images.githubusercontent.com/365821/166913376-18c369d0-c6a9-49f9-97cf-e8774675b8c1.png)
+![did-registry-lookup](https://user-images.githubusercontent.com/365821/166981861-3966c717-ffcc-4162-b6f0-5dd9e0ac4a76.png)
 
 ### Interface
 
@@ -57,7 +57,7 @@ contract Main {
     }
 
     function main() external requiresRegistry("plus", ["ca", "de", "us"]) {
-        /* your logic goes here */
+        /* your transaction logic goes here */
     }
 }
 ```
@@ -74,7 +74,7 @@ The example above adds approximately 26k gas to the transaction cost. Gas usage 
 
 **Authorize transactions by including a Fractal signature in their payload.**
 
-![credential-verification](https://user-images.githubusercontent.com/365821/166913405-033ad50d-366c-4017-af9b-a8b84bf8821e.png)
+![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
 
 ### Setup
 
@@ -90,24 +90,24 @@ contract Main is CredentialVerifier {
         uint validUntil,
         bytes calldata signature
     ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
-        /* ... */
+        /* your transaction logic goes here */
     }
 }
 ```
 
 ### Usage
 
-1. Before a user interacts with your contract, ask them to sign a message authorizing you to get their info.
-1. Send this message and signature to Fractal's API, which returns a `validUntil` timestamp (24 hours in the future) and a `signature`.
-1. Use those return values as arguments to your contract's method.
+1. Before a user interacts with your contract, ask them to sign a message authorizing Fractal to respond on their behalf.
+1. Send this message and signature to Fractal's API, which returns an expiry timestamp (24 hours in the future) and a proof (Fractal's signature of the user's credential).
+1. Use this timestamp and proof as arguments to your contract's method.
 
 ```javascript
 const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
-const userSignature = await ethereum.request({method: "personal_sign", params: [message, account]});
+const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
 
-const { validUntil, signature } = await FractalAPI.getCredentialSignature(userSignature);
+const { validUntil, proof } = await FractalAPI.getProof(signature);
 
-mainContract.methods.main(validUntil, signature).send({ from: account });
+mainContract.methods.main(validUntil, proof).send({ from: account });
 ```
 
 ### Gas cost
