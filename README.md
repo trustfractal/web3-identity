@@ -1,18 +1,37 @@
-# Web3 Identity
+# Identity-based smart contract authorization
+
+**Power your smart contracts with identity verification.**
+
+Authorize transactions based on verified user uniqueness, reputation, and KYC/AML status:
+* enable truly democratic governance with one-person-one vote;
+* distribute airdrops fairly and avoid bot attacks;
+* let artists autograph their NFTs to prove their authenticity;
+* bring sybil-resistance to quadratic voting;
+* unlock undercollateralized loans;
+* ensure KYC/AML regulatory compliance.
+
+Identity is how we get adoption. Early adopters take many risks, but most people are looking for a middle ground between the safe walled garden of Coinbase, and the wild west of liquidity farming. Making identity simple and secure is how we bring the next billion people into crypto and how we persuade institutions to deploy trillions of dollars of liquidity.
 
 ## DID Registry Lookup
 
-This method allows you to authorize transactions by looking up the sender in Fractal's DID registry.
+**Authorize transactions by checking their origin address against Fractal's DID registry.**
 
 ![did-registry-lookup](https://user-images.githubusercontent.com/365821/166913376-18c369d0-c6a9-49f9-97cf-e8774675b8c1.png)
 
-For example, you may need your users to have cleared the KYC level `plus`, and not be residents of Canada, Germany or the United States.
+### Interface
 
-The lookups below add approximately 26,000 gas to the transaction cost.
+* `getFractalId(address) -> bytes32 fractalId`
+    * Returns the `fractalId` for a given wallet `address`.
+    * Each `fractalId` corresponds to a unique human, with one or more associated `address`es.
+* `isUserInList(bytes32 fractaId, string listId) -> bool presence`
+    * Returns `true` if the given `fractalId` is present in `listId`.
+    * KYC level `listId`s: `basic`, `light` and `plus`.
+    * Residency `listId`s: `residency_<country code>` (one list for every country; [ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 
-### Usage
+### Setup
 
-Import our `FractalRegistry.sol` contract, set its address, and add a modifier such as the following to enforce the user is present in the registry and in the right lists.
+1. Import our `FractalRegistry.sol` contract and set its address.
+1. Adapt the `requiresRegistry` `modifier` based on your KYC level and country requirements.
 
 ```solidity
 import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
@@ -43,37 +62,54 @@ contract Main {
 }
 ```
 
+### Usage
+
+You're all set: no further steps are required. Fractal keeps the DID Registry up to date.
+
+### Gas cost
+
+The example above adds approximately 26k gas to the transaction cost. Gas usage increases with the number of lookups.
+
 ## Credential Verification
 
-This method allows you to authorize transactions by including a signed credential in the transaction payload.
+**Authorize transactions by including a Fractal signature in their payload.**
 
 ![credential-verification](https://user-images.githubusercontent.com/365821/166913405-033ad50d-366c-4017-af9b-a8b84bf8821e.png)
 
-For example, take the following credential: `1651759004;0x5b38da6a701c568545dcfcb03fcb875f56beddc4;plus;not:ca,de,us`.
+### Setup
 
-It states that:
-* it's valid until timestamp `1651759004`
-* it's valid for sender `0x5b38da6a701c568545dcfcb03fcb875f56beddc4`
-* this user cleared the KYC level `plus`
-* this user is not a resident of Canada, Germany or the United States ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes)
-
-Our API would return the following signature for this credential: `0x8ca40cd6e957b91cce730aa9f29584d9dd0bc19c2934cb94f12ffee20b38940d511c78d50ea55b281943542ba29f567581e08528479e07c432415eda35cb67581c`
-
-This verification adds approximately 26,000 gas to the transaction cost.
-
-### Usage
-
-Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier. This enforces that the signature matches your expected credential, and has Fractal as the signer.
+1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
+1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
+    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 
 ```solidity
 import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
 
 contract Main is CredentialVerifier {
     function main(
-        bytes calldata signature,
-        uint validUntil
-    ) external requiresCredential("plus;not:ca,de,us", signature, validUntil) {
-        /* your logic goes here */
+        uint validUntil,
+        bytes calldata signature
+    ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
+        /* ... */
     }
 }
 ```
+
+### Usage
+
+1. Before a user interacts with your contract, ask them to sign a message authorizing you to get their info.
+1. Send this message and signature to Fractal's API, which returns a `validUntil` timestamp (24 hours in the future) and a `signature`.
+1. Use those return values as arguments to your contract's method.
+
+```javascript
+const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
+const userSignature = await ethereum.request({method: "personal_sign", params: [message, account]});
+
+const { validUntil, signature } = await FractalAPI.getCredentialSignature(userSignature);
+
+mainContract.methods.main(validUntil, signature).send({ from: account });
+```
+
+### Gas cost
+
+Credential verification adds approximately 26k gas to the transaction cost.
