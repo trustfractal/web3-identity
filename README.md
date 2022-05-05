@@ -55,7 +55,7 @@ It states that:
 * it's valid until timestamp `1651759004`
 * it's valid for sender `0x5b38da6a701c568545dcfcb03fcb875f56beddc4`
 * this user cleared the KYC level `plus`
-* this user is not a resident of Canada, Germany or the United States (country codes as per [ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+* this user is not a resident of Canada, Germany or the United States ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes)
 
 Our API would return the following signature for this credential: `0x8ca40cd6e957b91cce730aa9f29584d9dd0bc19c2934cb94f12ffee20b38940d511c78d50ea55b281943542ba29f567581e08528479e07c432415eda35cb67581c`
 
