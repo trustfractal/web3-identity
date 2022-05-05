@@ -14,7 +14,7 @@ The lookups below add approximately 26,000 gas to the transaction cost.
 
 Import our `FractalRegistry.sol` contract, set its address, and add a modifier such as the following to enforce the user is present in the registry and in the right lists.
 
-```
+```solidity
 import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
 
 contract Main {
@@ -57,7 +57,7 @@ This verification adds approximately 8,000 gas to the transaction cost.
 
 Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier. This enforces that the signature matches your expected credential, and has Fractal as the signer.
 
-```
+```solidity
 import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
 
 contract Main is CredentialVerifier {
