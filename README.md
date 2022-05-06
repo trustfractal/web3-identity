@@ -14,7 +14,7 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 
 ## DID Registry Lookup
 
-**Authorize transactions by looking up their sender on Fractal's DID registry.**
+**Authorize transactions by looking up their sender on Fractal's DID Registry.**
 * no need to access or manage personal data
 * no need to change the user flow
 * no need for user interaction (e.g. airdrops)
@@ -23,13 +23,34 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 
 ### Interface
 
-* `getFractalId(address) -> bytes32 fractalId`
-    * Returns the `fractalId` for a given wallet `address`.
-    * Each `fractalId` corresponds to a unique human, with one or more associated `address`es.
-* `isUserInList(bytes32 fractaId, string listId) -> bool presence`
-    * Returns `true` if the given `fractalId` is present in `listId`.
-    * KYC level `listId`s: `basic`, `light` and `plus`.
-    * Residency `listId`s: `residency_<country code>` (one list for every country; [ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
+A unique human has a unique Fractal ID, each with 1+ addresses and present in 0+ lists.
+
+```
+address [*]---[1] fractalId [*]---[*] listId
+```
+
+#### Getting the Fractal ID for an address
+
+```solidity
+bytes32 fractalId = getFractalId(address walletAddress);
+```
+
+#### Looking for a Fractal ID in a list
+
+```solidity
+bool presence = isUserInList(bytes32 fractaId, string listId);
+```
+
+##### Available lists
+
+Every `fractalId` in the DID Registry corresponds to a unique human. Use cases requiring additional guarantees, such as KYC/AML, can also make use of the following lists.
+
+| `listId` | Meaning |
+| :--- | :--- |
+| `basic` | Passed KYC level _basic_ |
+| `light` | Passed KYC level _light_ |
+| `plus` | Passed KYC level _plus_ |
+| `residency_xy` | Resident in country _xy_ ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
 
 ### Setup
 
