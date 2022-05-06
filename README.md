@@ -26,8 +26,8 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 
 ```
 GET https://credentials.fractal.id/
-    ?message=< message user signed >
-    &signature=< user signature >
+    ?message=<message user signed>
+    &signature=<user signature>
 
 200 OK { validUntil: <timestamp>, proof: "<proof>" }
 
