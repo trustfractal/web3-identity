@@ -50,8 +50,8 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
   contract Main is CredentialVerifier {
       function main(
           /* your transaction arguments go here */
-          uint validUntil,
-          bytes calldata signature
+          bytes calldata signature,
+          uint validUntil
       ) external requiresCredential("plus;not:ca,de,us", signature, validUntil) {
           /* your transaction logic goes here */
       }
@@ -77,7 +77,7 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
   const { validUntil, proof } = await FractalAPI.getProof(signature);
 
   const mainContract = new web3.eth.Contract(contractABI, contractAddress);
-  mainContract.methods.main(validUntil, proof).send({ from: account });
+  mainContract.methods.main(proof, validUntil).send({ from: account });
   ```
 </details>
 
