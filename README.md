@@ -101,8 +101,8 @@ No further steps are required. Fractal keeps the DID Registry up to date. Build 
   ```javascript
   // using web3.js
 
-  const mainContract = new web3.eth.Contract(..., ...);
-  mainContract.methods.main().send({ from: account });
+  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
+  mainContract.methods.main(validUntil, proof).send({ from: account });
   ```
 </details>
 
@@ -174,7 +174,7 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
 
   const { validUntil, proof } = await FractalAPI.getProof(signature);
 
-  const mainContract = new web3.eth.Contract(..., ...);
+  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
   mainContract.methods.main(validUntil, proof).send({ from: account });
   ```
 </details>
