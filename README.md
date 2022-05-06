@@ -50,7 +50,7 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 | `basic` | Passed KYC level _basic_ |
 | `light` | Passed KYC level _light_ |
 | `plus` | Passed KYC level _plus_ |
-| `residency_xy` | Resident in country _xy_ ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
+| `residency_xy` | Resident in country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
 
 ### Setup
 
@@ -138,7 +138,7 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
 
 1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
 1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
-    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
+    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 
 <details>
   <summary>🧵 Click to expand example <code>(Solidity)</code></summary>
