@@ -57,10 +57,13 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 1. Import our `FractalRegistry.sol` contract and set its address.
 1. Adapt the `requiresRegistry` `modifier` based on your KYC level and country requirements.
 
-```solidity
-import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
+<details>
+  <summary>🧵<strong>Click</strong> to expand (Solidity code)</summary>
 
-contract Main {
+  ```solidity
+  import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
+
+  contract Main {
     address public registryAddress = 0x38cB7800C3Fddb8dda074C1c650A155154924C73;
 
     modifier requiresRegistry(
@@ -69,7 +72,7 @@ contract Main {
     ) {
         bytes32 fractalId = FractalRegistry(registryAddress).getFractalId(msg.sender);
         require(fractalId != 0);
-        
+
         require(FractalRegistry(registryAddress).isUserInList(fractalId, allowedLevel));
 
         for (uint256 i = 0; i < blockedCountries.length; i++) {
@@ -85,19 +88,24 @@ contract Main {
     ) external requiresRegistry("plus", ["ca", "de", "us"]) {
         /* your transaction logic goes here */
     }
-}
-```
+  }
+  ```
+</details>
 
 ### Usage
 
 No further steps are required. Fractal keeps the DID Registry up to date. Build your transactions as you normally would.
 
-```javascript
-// using web3.js
+<details>
+  <summary>🧵<strong>Click</strong> to expand (Javascript code)</summary>
 
-const mainContract = new web3.eth.Contract(..., ...);
-mainContract.methods.main().send({ from: account });
-```
+  ```javascript
+  // using web3.js
+
+  const mainContract = new web3.eth.Contract(..., ...);
+  mainContract.methods.main().send({ from: account });
+  ```
+</details>
 
 ### Gas cost
 
@@ -132,19 +140,23 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
 1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
     * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 
-```solidity
-import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
+<details>
+  <summary>🧵<strong>Click</strong> to expand (Solidity code)</summary>
 
-contract Main is CredentialVerifier {
-    function main(
-        /* your transaction arguments go here */
-        uint validUntil,
-        bytes calldata signature
-    ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
-        /* your transaction logic goes here */
-    }
-}
-```
+  ```solidity
+  import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
+
+  contract Main is CredentialVerifier {
+      function main(
+          /* your transaction arguments go here */
+          uint validUntil,
+          bytes calldata signature
+      ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
+          /* your transaction logic goes here */
+      }
+  }
+  ```
+</details>
 
 ### Usage
 
@@ -152,17 +164,21 @@ contract Main is CredentialVerifier {
 1. Send this message and signature to Fractal's API, which returns an expiry timestamp (24 hours in the future) and a proof (Fractal's signature of the user's credential).
 1. Use this timestamp and proof as arguments to your contract's method.
 
-```javascript
-// using web3.js and MetaMask
+<details>
+  <summary>🧵<strong>Click</strong> to expand (Javascript code)</summary>
 
-const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
-const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
+  ```javascript
+  // using web3.js and MetaMask
 
-const { validUntil, proof } = await FractalAPI.getProof(signature);
+  const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
+  const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
 
-const mainContract = new web3.eth.Contract(..., ...);
-mainContract.methods.main(validUntil, proof).send({ from: account });
-```
+  const { validUntil, proof } = await FractalAPI.getProof(signature);
+
+  const mainContract = new web3.eth.Contract(..., ...);
+  mainContract.methods.main(validUntil, proof).send({ from: account });
+  ```
+</details>
 
 ### Gas cost
 
