@@ -48,7 +48,6 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 | `listId` | Meaning |
 | :--- | :--- |
 | `basic` | Passed KYC level _basic_ |
-| `light` | Passed KYC level _light_ |
 | `plus` | Passed KYC level _plus_ |
 | `residency_xy` | Resident in country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
 
