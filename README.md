@@ -58,7 +58,7 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 1. Adapt the `requiresRegistry` `modifier` based on your KYC level and country requirements.
 
 <details>
-  <summary>🧵<strong>Click</strong> to expand (Solidity code)</summary>
+  <summary>🧵 Click to expand example <code>(Solidity)</code></summary>
 
   ```solidity
   import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
@@ -97,7 +97,7 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 No further steps are required. Fractal keeps the DID Registry up to date. Build your transactions as you normally would.
 
 <details>
-  <summary>🧵<strong>Click</strong> to expand (Javascript code)</summary>
+  <summary>🧵 Click to expand example <code>(Javascript)</code></summary>
 
   ```javascript
   // using web3.js
@@ -141,7 +141,7 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
     * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO_3166-1_alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 
 <details>
-  <summary>🧵<strong>Click</strong> to expand (Solidity code)</summary>
+  <summary>🧵 Click to expand example <code>(Solidity)</code></summary>
 
   ```solidity
   import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
@@ -165,7 +165,7 @@ GET https://credentials.fractal.id?message={message}&signature={signature}
 1. Use this timestamp and proof as arguments to your contract's method.
 
 <details>
-  <summary>🧵<strong>Click</strong> to expand (Javascript code)</summary>
+  <summary>🧵 Click to expand example <code>(Javascript)</code></summary>
 
   ```javascript
   // using web3.js and MetaMask
