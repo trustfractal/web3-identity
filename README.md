@@ -25,11 +25,11 @@ Identity is how we get adoption. Early adopters take many risks, but most people
 #### Getting a Fractal proof for a user
 
 ```
-GET https://credentials.fractal.id?message={message}&signature={signature}
-    message (string): The message the user was asked to sign ("I authorize you to...")
-    signature (string): The user's signature of the message ("0x76b3...")
+GET https://credentials.fractal.id/
+    ?message=< message user signed >
+    &signature=< user signature >
 
-200 OK { validUntil: 1651827525, proof: "0xb875..." }
+200 OK { validUntil: <timestamp>, proof: "<proof>" }
 
 400 BAD REQUEST { }
 404 NOT FOUND { }
