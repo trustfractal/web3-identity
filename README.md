@@ -12,7 +12,82 @@ Authorize transactions based on verified user uniqueness, reputation, and KYC/AM
 
 Identity is how we get adoption. Early adopters take many risks, but most people are looking for a middle ground between the safe walled garden of Coinbase, and the wild west of liquidity farming. Making identity simple and secure is how we bring the next billion people into crypto and how we persuade institutions to deploy trillions of dollars of liquidity.
 
-## Option 1: DID Registry Lookup
+## Option 1: Credential Proof Verification
+
+**Authorize transactions by including a Fractal proof in their payload.**
+* no need to access or manage personal data
+* minimal changes to user flow
+
+![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
+
+### Interface
+
+#### Getting a Fractal proof for a user
+
+```
+GET https://credentials.fractal.id?message={message}&signature={signature}
+    message (string): The message the user was asked to sign ("I authorize you to...")
+    signature (string): The user's signature of the message ("0x76b3...")
+
+200 OK { validUntil: 1651827525, proof: "0xb875..." }
+
+400 BAD REQUEST { }
+404 NOT FOUND { }
+```
+
+### Setup
+
+1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
+1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
+    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
+
+<details>
+  <summary>🧵 Click to expand example <code>(Solidity)</code></summary>
+
+  ```solidity
+  import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
+
+  contract Main is CredentialVerifier {
+      function main(
+          /* your transaction arguments go here */
+          uint validUntil,
+          bytes calldata signature
+      ) external requiresCredential("plus;not:ca,de,us", signature, validUntil) {
+          /* your transaction logic goes here */
+      }
+  }
+  ```
+</details>
+
+### Usage
+
+1. Before a user interacts with your contract, ask them to sign a message authorizing Fractal to respond on their behalf.
+1. Send this message and signature to Fractal's API, which returns an expiry timestamp (24 hours in the future) and a proof (Fractal's signature of the user's credential).
+1. Use this timestamp and proof as arguments to your contract's method.
+
+<details>
+  <summary>🧵 Click to expand example <code>(Javascript)</code></summary>
+
+  ```javascript
+  // using web3.js and MetaMask
+
+  const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
+  const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
+
+  const { validUntil, proof } = await FractalAPI.getProof(signature);
+
+  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
+  mainContract.methods.main(validUntil, proof).send({ from: account });
+  ```
+</details>
+
+### Gas cost
+
+Credential verification adds approximately 26k gas to the transaction cost.
+
+## Option 2: DID Registry Lookup
+
+_⚠️ only available in Karura; other chains will be supported on a demand basis_
 
 **Authorize transactions by looking up their sender on Fractal's DID Registry.**
 * no need to access or manage personal data
@@ -63,20 +138,20 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
   import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
 
   contract Main {
-    address public registryAddress = 0x38cB7800C3Fddb8dda074C1c650A155154924C73;
+    FractalRegistry registry = FractalRegistry(0x5FD6eB55D12E759a21C09eF703fe0CBa1DC9d88D);
 
     modifier requiresRegistry(
         string memory allowedLevel,
         string[3] memory blockedCountries
     ) {
-        bytes32 fractalId = FractalRegistry(registryAddress).getFractalId(msg.sender);
-        require(fractalId != 0);
+        bytes32 fractalId = registry.getFractalId(msg.sender);
 
-        require(FractalRegistry(registryAddress).isUserInList(fractalId, allowedLevel));
+        require(fractalId != 0);
+        
+        require(registry.isUserInList(fractalId, allowedLevel));
 
         for (uint256 i = 0; i < blockedCountries.length; i++) {
-            string memory list = string(abi.encodePacked("residency_", blockedCountries[i]));
-            require(!FractalRegistry(registryAddress).isUserInList(fractalId, list));
+            require(!registry.isUserInList(fractalId, string.concat("residency_", blockedCountries[i])));
         }
 
         _;
@@ -108,77 +183,4 @@ No further steps are required. Fractal keeps the DID Registry up to date. Build 
 
 ### Gas cost
 
-The example above adds approximately 26k gas to the transaction cost. Gas usage increases with the number of lookups.
-
-## Option 2: Credential Proof Verification
-
-**Authorize transactions by including a Fractal proof in their payload.**
-* no need to access or manage personal data
-* minimal changes to user flow
-
-![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
-
-### Interface
-
-#### Getting a Fractal proof for a user
-
-```
-GET https://credentials.fractal.id?message={message}&signature={signature}
-    message (string): The message the user was asked to sign ("I authorize you to...")
-    signature (string): The user's signature of the message ("0x76b3...")
-
-200 OK { validUntil: 1651827525, proof: "0xb875..." }
-
-400 BAD REQUEST { }
-404 NOT FOUND { }
-```
-
-### Setup
-
-1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
-1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
-    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
-
-<details>
-  <summary>🧵 Click to expand example <code>(Solidity)</code></summary>
-
-  ```solidity
-  import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
-
-  contract Main is CredentialVerifier {
-      function main(
-          /* your transaction arguments go here */
-          uint validUntil,
-          bytes calldata signature
-      ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
-          /* your transaction logic goes here */
-      }
-  }
-  ```
-</details>
-
-### Usage
-
-1. Before a user interacts with your contract, ask them to sign a message authorizing Fractal to respond on their behalf.
-1. Send this message and signature to Fractal's API, which returns an expiry timestamp (24 hours in the future) and a proof (Fractal's signature of the user's credential).
-1. Use this timestamp and proof as arguments to your contract's method.
-
-<details>
-  <summary>🧵 Click to expand example <code>(Javascript)</code></summary>
-
-  ```javascript
-  // using web3.js and MetaMask
-
-  const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
-  const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
-
-  const { validUntil, proof } = await FractalAPI.getProof(signature);
-
-  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
-  mainContract.methods.main(validUntil, proof).send({ from: account });
-  ```
-</details>
-
-### Gas cost
-
-Credential verification adds approximately 26k gas to the transaction cost.
+The example above adds approximately 25k gas to the transaction cost. Gas usage increases with the number of lookups.
