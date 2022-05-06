@@ -12,7 +12,7 @@ Authorize transactions based on verified user uniqueness, reputation, and KYC/AM
 
 Identity is how we get adoption. Early adopters take many risks, but most people are looking for a middle ground between the safe walled garden of Coinbase, and the wild west of liquidity farming. Making identity simple and secure is how we bring the next billion people into crypto and how we persuade institutions to deploy trillions of dollars of liquidity.
 
-## DID Registry Lookup
+## Option 1: DID Registry Lookup
 
 **Authorize transactions by looking up their sender on Fractal's DID Registry.**
 * no need to access or manage personal data
@@ -80,7 +80,9 @@ contract Main {
         _;
     }
 
-    function main() external requiresRegistry("plus", ["ca", "de", "us"]) {
+    function main(
+        /* your transaction arguments go here */
+    ) external requiresRegistry("plus", ["ca", "de", "us"]) {
         /* your transaction logic goes here */
     }
 }
@@ -91,6 +93,9 @@ contract Main {
 No further steps are required. Fractal keeps the DID Registry up to date. Build your transactions as you normally would.
 
 ```javascript
+// using web3.js
+
+const mainContract = new web3.eth.Contract(..., ...);
 mainContract.methods.main().send({ from: account });
 ```
 
@@ -98,13 +103,28 @@ mainContract.methods.main().send({ from: account });
 
 The example above adds approximately 26k gas to the transaction cost. Gas usage increases with the number of lookups.
 
-## Credential Verification
+## Option 2: Credential Proof Verification
 
-**Authorize transactions by including a Fractal signature in their payload.**
+**Authorize transactions by including a Fractal proof in their payload.**
 * no need to access or manage personal data
 * minimal changes to user flow
 
 ![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
+
+### Interface
+
+#### Getting a Fractal proof for a user
+
+```
+GET https://credentials.fractal.id?message={message}&signature={signature}
+    message (string): The message the user was asked to sign ("I authorize you to...")
+    signature (string): The user's signature of the message ("0x76b3...")
+
+200 OK { validUntil: 1651827525, proof: "0xb875..." }
+
+400 BAD REQUEST { }
+404 NOT FOUND { }
+```
 
 ### Setup
 
@@ -117,6 +137,7 @@ import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
 
 contract Main is CredentialVerifier {
     function main(
+        /* your transaction arguments go here */
         uint validUntil,
         bytes calldata signature
     ) external requiresCredential("plus;not:ca,de,us", validUntil, signature) {
@@ -132,11 +153,14 @@ contract Main is CredentialVerifier {
 1. Use this timestamp and proof as arguments to your contract's method.
 
 ```javascript
+// using web3.js and MetaMask
+
 const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
 const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
 
 const { validUntil, proof } = await FractalAPI.getProof(signature);
 
+const mainContract = new web3.eth.Contract(..., ...);
 mainContract.methods.main(validUntil, proof).send({ from: account });
 ```
 
