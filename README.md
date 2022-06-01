@@ -29,7 +29,7 @@ GET https://credentials.fractal.id/
     ?message=<message user signed>
     &signature=<user signature>
 
-200 OK { validUntil: <timestamp>, proof: "<proof>" }
+200 OK { proof: "<proof>", validUntil: <timestamp>, approvedAt: <timestamp> }
 
 400 BAD REQUEST { }
 404 NOT FOUND { }
@@ -38,8 +38,10 @@ GET https://credentials.fractal.id/
 ### Setup
 
 1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
-1. Change the first argument of `requiresCredential` based on your KYC level and country requirements.
+1. Change the first argument of `requiresCredential` (`expectedCredential`) based on your KYC level and country requirements.
     * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
+1. Set the last argument of `requiresCredential` (`maxAge`) to the maximum amount of time allowed to pass since KYC approval.
+  * In seconds (e.g. for 182 days use 15724800: `182*24*60*60`)
 
 <details>
   <summary>👁️ <strong>See example <code>(Solidity)</code></strong></summary>
@@ -50,9 +52,10 @@ GET https://credentials.fractal.id/
   contract Main is CredentialVerifier {
       function main(
           /* your transaction arguments go here */
-          bytes calldata signature,
-          uint validUntil
-      ) external requiresCredential("plus;not:ca,de,us", signature, validUntil) {
+          bytes calldata proof,
+          uint validUntil,
+          uint approvedAt
+      ) external requiresCredential("plus;not:ca,de,us", proof, validUntil, approvedAt, 15724800) {
           /* your transaction logic goes here */
       }
   }
@@ -74,10 +77,10 @@ GET https://credentials.fractal.id/
   const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
   const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
 
-  const { validUntil, proof } = await FractalAPI.getProof(signature);
+  const { proof, validUntil, approvedAt } = await FractalAPI.getProof(signature);
 
   const mainContract = new web3.eth.Contract(contractABI, contractAddress);
-  mainContract.methods.main(proof, validUntil).send({ from: account });
+  mainContract.methods.main(proof, validUntil, approvedAt).send({ from: account });
   ```
 </details>
 

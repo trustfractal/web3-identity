@@ -9,12 +9,19 @@ contract CredentialVerifier {
 
     modifier requiresCredential(
         string memory expectedCredential,
-        bytes calldata signature,
-        uint validUntil
+        bytes calldata proof,
+        uint validUntil,
+        uint approvedAt,
+        uint maxAge
     ) {
         require (
             block.timestamp < validUntil,
             "Credential no longer valid"
+        );
+
+        require (
+            block.timestamp < approvedAt + maxAge,
+            "Approval not recent enough"
         );
 
         string memory sender = Strings.toHexString(uint256(uint160(msg.sender)), 20);
@@ -22,8 +29,8 @@ contract CredentialVerifier {
         require(
             SignatureChecker.isValidSignatureNow(
                 0x559FfB9C4AB5A552Ed2Ea814A84e74D4CFA21d34,
-                ECDSA.toEthSignedMessageHash(abi.encodePacked(Strings.toString(validUntil), ";", sender, ";", expectedCredential)),
-                signature
+                ECDSA.toEthSignedMessageHash(abi.encodePacked(Strings.toString(validUntil), ";", Strings.toString(approvedAt), ";", sender, ";", expectedCredential)),
+                proof
             ),
             "Signature doesn't match"
         );
