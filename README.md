@@ -29,7 +29,7 @@ GET https://credentials.fractal.id/
     ?message=<message user signed>
     &signature=<user signature>
 
-200 OK { proof: "<proof>", validUntil: <timestamp>, approvedAt: <timestamp> }
+200 OK { proof: "<proof>", validUntil: <UNIX timestamp>, approvedAt: <UNIX timestamp> }
 
 400 BAD REQUEST { }
 404 NOT FOUND { }
@@ -41,7 +41,8 @@ GET https://credentials.fractal.id/
 1. Change the first argument of `requiresCredential` (`expectedCredential`) based on your KYC level and country requirements.
     * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
 1. Set the last argument of `requiresCredential` (`maxAge`) to the maximum amount of time allowed to pass since KYC approval.
-  * In seconds (e.g. for 182 days use 15724800: `182*24*60*60`)
+  * In seconds (e.g. for `182` days, use `15724800`: `182*24*60*60`)
+  * Use `0` to skip this check (i.e. if it's not important how long ago the KYC was approved)
 
 <details>
   <summary>👁️ <strong>See example <code>(Solidity)</code></strong></summary>

@@ -20,7 +20,7 @@ contract CredentialVerifier {
         );
 
         require (
-            block.timestamp < approvedAt + maxAge,
+            maxAge == 0 || block.timestamp < approvedAt + maxAge,
             "Approval not recent enough"
         );
 
