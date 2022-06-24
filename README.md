@@ -3,20 +3,22 @@
 **Power your smart contracts with verified identities — without accessing or managing personal data.**
 
 Authorize transactions based on verified user uniqueness, reputation, and KYC/AML status:
-* enable truly democratic governance with one-person-one vote;
-* distribute airdrops fairly and avoid bot attacks;
-* let artists autograph their NFTs to prove their authenticity;
-* bring sybil-resistance to quadratic voting;
-* unlock undercollateralized loans;
-* ensure KYC/AML regulatory compliance.
+
+- enable truly democratic governance with one-person-one vote;
+- distribute airdrops fairly and avoid bot attacks;
+- let artists autograph their NFTs to prove their authenticity;
+- bring sybil-resistance to quadratic voting;
+- unlock undercollateralized loans;
+- ensure KYC/AML regulatory compliance.
 
 Identity is how we get adoption. Early adopters take many risks, but most people are looking for a middle ground between the safe walled garden of Coinbase, and the wild west of liquidity farming. Making identity simple and secure is how we bring the next billion people into crypto and how we persuade institutions to deploy trillions of dollars of liquidity.
 
 ## Option 1: Credential Proof Verification
 
 **Authorize transactions by including a Fractal proof in their payload.**
-* no need to access or manage personal data
-* minimal changes to user flow
+
+- no need to access or manage personal data
+- minimal changes to user flow
 
 ![credential-verification](https://user-images.githubusercontent.com/365821/166981914-ed1d1888-9858-4989-8054-014a1937daae.png)
 
@@ -29,38 +31,47 @@ GET https://credentials.fractal.id/
     ?message=<message user signed>
     &signature=<user signature>
 
-200 OK { proof: "<proof>", validUntil: <UNIX timestamp>, approvedAt: <UNIX timestamp> }
+200 OK {
+  address: "<EVM address>",
+  approvedAt: <UNIX timestamp>,
+  fractalId: "<hex string>",
+  proof: "<hex string>",
+  validUntil: <UNIX timestamp>
+}
 
-400 BAD REQUEST { }
-404 NOT FOUND { }
+400 BAD REQUEST { error: "<error code>" }
+404 NOT FOUND { address: "<EVM address>", error: "<error code>" }
 ```
 
 ### Setup
 
 1. Import our `CredentialVerifier.sol` contract to inherit its `requiresCredential` modifier.
 1. Change the first argument of `requiresCredential` (`expectedCredential`) based on your KYC level and country requirements.
-    * Format: `<kycLevel>;not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
-1. Set the last argument of `requiresCredential` (`maxAge`) to the maximum amount of time allowed to pass since KYC approval.
-  * In seconds (e.g. for `182` days, use `15724800`: `182*24*60*60`)
-  * Use `0` to skip this check (i.e. if it's not important how long ago the KYC was approved)
+   - Format: `level:<kycLevel>;citizenship_not:<comma-separated country codes>;residency_not:<comma-separated country codes>` ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).
+1. Set the second to last argument of `requiresCredential` (`maxAge`) to the maximum amount of time allowed to pass since KYC approval.
+
+- In seconds (e.g. for `182` days, use `15724800`: `182*24*60*60`)
+- Use `0` to skip this check (i.e. if it's not important how long ago the KYC was approved)
 
 <details>
   <summary>👁️ <strong>See example <code>(Solidity)</code></strong></summary>
 
-  ```solidity
-  import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
+```solidity
+import "github.com/trustfractal/web3-identity/CredentialVerifier.sol";
 
-  contract Main is CredentialVerifier {
-      function main(
-          /* your transaction arguments go here */
-          bytes calldata proof,
-          uint validUntil,
-          uint approvedAt
-      ) external requiresCredential("plus;not:ca,de,us", proof, validUntil, approvedAt, 15724800) {
-          /* your transaction logic goes here */
-      }
-  }
-  ```
+contract Main is CredentialVerifier {
+    function main(
+        /* your transaction arguments go here */
+        bytes calldata proof,
+        uint validUntil,
+        uint approvedAt,
+        string memory fractalId
+    ) external requiresCredential("plus;not:ca,de,us", proof, validUntil, approvedAt, 15724800, fractalId) {
+        /* your transaction logic goes here */
+    }
+}
+```
+
 </details>
 
 ### Usage
@@ -72,17 +83,28 @@ GET https://credentials.fractal.id/
 <details>
   <summary>👁️ <strong>See example <code>(Javascript)</code></strong></summary>
 
-  ```javascript
-  // using web3.js and MetaMask
+```javascript
+// using web3.js and MetaMask
 
-  const message = "I authorize you to get a proof from Fractal that I passed KYC level plus, and am not a resident of the following countries: CA, DE, US";
-  const signature = await ethereum.request({method: "personal_sign", params: [message, account]});
+const message = `I authorize DeFi platform XYZ (OMcs_CbM1ScY737qkOTOXGEP0JvT-Ny-TDQszc_peEg) to get a proof from Fractal that:
+- I passed KYC level plus+liveness
+- I am not a citizen of the following countries: Germany (DE)
+- I am not a resident of the following countries: Germany (DE)`;
 
-  const { proof, validUntil, approvedAt } = await FractalAPI.getProof(signature);
+const signature = await ethereum.request({
+  method: "personal_sign",
+  params: [message, account],
+});
 
-  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
-  mainContract.methods.main(proof, validUntil, approvedAt).send({ from: account });
-  ```
+const { address, approvedAt, fractalId, proof, validUntil } =
+  await FractalAPI.getProof(message, signature);
+
+const mainContract = new web3.eth.Contract(contractABI, contractAddress);
+mainContract.methods
+  .main(proof, validUntil, approvedAt, fractalId)
+  .send({ from: account });
+```
+
 </details>
 
 ### Gas cost
@@ -94,9 +116,10 @@ Credential verification adds approximately 26k gas to the transaction cost.
 _⚠️ only available in Karura; other chains will be supported on a demand basis_
 
 **Authorize transactions by looking up their sender on Fractal's DID Registry.**
-* no need to access or manage personal data
-* no need to change the user flow
-* no need for user interaction (e.g. airdrops)
+
+- no need to access or manage personal data
+- no need to change the user flow
+- no need for user interaction (e.g. airdrops)
 
 ![did-registry-lookup](https://user-images.githubusercontent.com/365821/166981861-3966c717-ffcc-4162-b6f0-5dd9e0ac4a76.png)
 
@@ -124,10 +147,10 @@ bool presence = isUserInList(bytes32 fractaId, string listId);
 
 Every `fractalId` in the DID Registry corresponds to a unique human. Use cases requiring additional guarantees, such as KYC/AML, can also make use of the following lists.
 
-| `listId` | Meaning |
-| :--- | :--- |
-| `basic` | Passed KYC level _basic_ |
-| `plus` | Passed KYC level _plus_ |
+| `listId`       | Meaning                                                                                                                                                                 |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `basic`        | Passed KYC level _basic_                                                                                                                                                |
+| `plus`         | Passed KYC level _plus_                                                                                                                                                 |
 | `residency_xy` | Resident in country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
 
 ### Setup
@@ -138,36 +161,37 @@ Every `fractalId` in the DID Registry corresponds to a unique human. Use cases r
 <details>
   <summary>👁️ <strong>See example <code>(Solidity)</code></strong></summary>
 
-  ```solidity
-  import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
+```solidity
+import {FractalRegistry} from "github.com/trustfractal/web3-identity/FractalRegistry.sol";
 
-  contract Main {
-    FractalRegistry registry = FractalRegistry(0x5FD6eB55D12E759a21C09eF703fe0CBa1DC9d88D);
+contract Main {
+  FractalRegistry registry = FractalRegistry(0x5FD6eB55D12E759a21C09eF703fe0CBa1DC9d88D);
 
-    modifier requiresRegistry(
-        string memory allowedLevel,
-        string[3] memory blockedCountries
-    ) {
-        bytes32 fractalId = registry.getFractalId(msg.sender);
+  modifier requiresRegistry(
+      string memory allowedLevel,
+      string[3] memory blockedCountries
+  ) {
+      bytes32 fractalId = registry.getFractalId(msg.sender);
 
-        require(fractalId != 0);
-        
-        require(registry.isUserInList(fractalId, allowedLevel));
+      require(fractalId != 0);
 
-        for (uint256 i = 0; i < blockedCountries.length; i++) {
-            require(!registry.isUserInList(fractalId, string.concat("residency_", blockedCountries[i])));
-        }
+      require(registry.isUserInList(fractalId, allowedLevel));
 
-        _;
-    }
+      for (uint256 i = 0; i < blockedCountries.length; i++) {
+          require(!registry.isUserInList(fractalId, string.concat("residency_", blockedCountries[i])));
+      }
 
-    function main(
-        /* your transaction arguments go here */
-    ) external requiresRegistry("plus", ["ca", "de", "us"]) {
-        /* your transaction logic goes here */
-    }
+      _;
   }
-  ```
+
+  function main(
+      /* your transaction arguments go here */
+  ) external requiresRegistry("plus", ["ca", "de", "us"]) {
+      /* your transaction logic goes here */
+  }
+}
+```
+
 </details>
 
 ### Usage
@@ -177,12 +201,13 @@ No further steps are required. Fractal keeps the DID Registry up to date. Build 
 <details>
   <summary>👁️ <strong>See example <code>(Javascript)</code></strong></summary>
 
-  ```javascript
-  // using web3.js
+```javascript
+// using web3.js
 
-  const mainContract = new web3.eth.Contract(contractABI, contractAddress);
-  mainContract.methods.main(validUntil, proof).send({ from: account });
-  ```
+const mainContract = new web3.eth.Contract(contractABI, contractAddress);
+mainContract.methods.main(validUntil, proof).send({ from: account });
+```
+
 </details>
 
 ### Gas cost
