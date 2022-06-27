@@ -147,11 +147,12 @@ bool presence = isUserInList(bytes32 fractaId, string listId);
 
 Every `fractalId` in the DID Registry corresponds to a unique human. Use cases requiring additional guarantees, such as KYC/AML, can also make use of the following lists.
 
-| `listId`       | Meaning                                                                                                                                                                 |
-| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `basic`        | Passed KYC level _basic_                                                                                                                                                |
-| `plus`         | Passed KYC level _plus_                                                                                                                                                 |
-| `residency_xy` | Resident in country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us` |
+| `listId`         | Meaning                                                                                                                                                                      |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `basic`          | Passed KYC level _basic_                                                                                                                                                     |
+| `plus`           | Passed KYC level _plus_                                                                                                                                                      |
+| `residency_xy`   | Resident in country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `residency_ca`, `residency_de`, `residency_us`      |
+| `citizenship_xy` | Citizen of country _xy_ ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes).<br>E.g. `citizenship_ca`, `citizenship_de`, `citizenship_us` |
 
 ### Setup
 
@@ -169,7 +170,8 @@ contract Main {
 
   modifier requiresRegistry(
       string memory allowedLevel,
-      string[3] memory blockedCountries
+      string[3] memory blockedResidencyCountries,
+      string[2] memory blockedCitizenshipCountries
   ) {
       bytes32 fractalId = registry.getFractalId(msg.sender);
 
@@ -177,8 +179,12 @@ contract Main {
 
       require(registry.isUserInList(fractalId, allowedLevel));
 
-      for (uint256 i = 0; i < blockedCountries.length; i++) {
-          require(!registry.isUserInList(fractalId, string.concat("residency_", blockedCountries[i])));
+      for (uint256 i = 0; i < blockedResidencyCountries.length; i++) {
+          require(!registry.isUserInList(fractalId, string.concat("residency_", blockedResidencyCountries[i])));
+      }
+
+      for (uint256 i = 0; i < blockedCitizenshipCountries.length; i++) {
+          require(!registry.isUserInList(fractalId, string.concat("citizenship_", blockedCitizenshipCountries[i])));
       }
 
       _;
@@ -186,7 +192,7 @@ contract Main {
 
   function main(
       /* your transaction arguments go here */
-  ) external requiresRegistry("plus", ["ca", "de", "us"]) {
+  ) external requiresRegistry("plus", ["ca", "de", "us"], ["de", "us"]) {
       /* your transaction logic goes here */
   }
 }
