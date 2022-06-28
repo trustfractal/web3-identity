@@ -80,17 +80,20 @@ contract Main is CredentialVerifier {
 1. Send this message and signature to Fractal's API, which returns an expiry timestamp (24 hours in the future) and a proof (Fractal's signature of the user's credential).
 1. Use this timestamp and proof as arguments to your contract's method.
 
+For more information on how to interact with Fractal's API, please read our [docs](https://docs.developer.fractal.id/fractal-credentials-api).
+
 <details>
   <summary>👁️ <strong>See example <code>(Javascript)</code></strong></summary>
 
 ```javascript
 // using web3.js and MetaMask
 
-const message = `I authorize DeFi platform XYZ (OMcs_CbM1ScY737qkOTOXGEP0JvT-Ny-TDQszc_peEg) to get a proof from Fractal that:
+const message = `I authorize Defistarter (dc3aa1910acbb7ff4d22c07e43a6926adc3a81305a9355a304410048c9a91afd) to get a proof from Fractal that:
 - I passed KYC level plus+liveness
 - I am not a citizen of the following countries: Germany (DE)
 - I am not a resident of the following countries: Germany (DE)`;
 
+const account = (await web3.eth.getAccounts())[0];
 const signature = await ethereum.request({
   method: "personal_sign",
   params: [message, account],
