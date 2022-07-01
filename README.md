@@ -66,7 +66,7 @@ contract Main is CredentialVerifier {
         uint validUntil,
         uint approvedAt,
         string memory fractalId
-    ) external requiresCredential("plus;not:ca,de,us", proof, validUntil, approvedAt, 15724800, fractalId) {
+    ) external requiresCredential("level:plus;citizenship_not:de;residency_not:ca,us", proof, validUntil, approvedAt, 15724800, fractalId) {
         /* your transaction logic goes here */
     }
 }
