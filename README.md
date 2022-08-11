@@ -116,7 +116,7 @@ Credential verification adds approximately 26k gas to the transaction cost.
 
 ## Option 2: DID Registry Lookup
 
-_⚠️ only available in Karura; other chains will be supported on a demand basis_
+_⚠️ only available in Karura, and soon on Aurora, Avalanche, and Polygon; other chains will be supported on a demand basis_
 
 **Authorize transactions by looking up their sender on Fractal's DID Registry.**
 
