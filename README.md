@@ -1,3 +1,6 @@
+># ⚠️ WARNING ⚠️
+> This repo is DEPRECATED and may contain incorrect information. Go [here](https://fractal.notion.site/Fractal-Product-Overview-2c63841aebaf4000b96f1c44c1680ad1) for the latest Fractal documentation.
+
 # Identity for web3: privacy-preserving transaction authorization
 
 **Power your smart contracts with verified identities — without accessing or managing personal data.**
@@ -116,7 +119,7 @@ Credential verification adds approximately 26k gas to the transaction cost.
 
 ## Option 2: DID Registry Lookup
 
-_⚠️ only available in Karura, and soon on Aurora, Avalanche, and Polygon; other chains will be supported on a demand basis_
+_⚠️ available in Karura and Polygon, and soon on Aurora and Avalanche; other chains will be supported on a demand basis_
 
 **Authorize transactions by looking up their sender on Fractal's DID Registry.**
 
